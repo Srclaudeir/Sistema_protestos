@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-brand-surface text-slate-900 antialiased;
+  margin: 0;
+}
+
+a {
+  @apply text-brand-turquoise hover:text-brand-purple;
+}
+
+button {
+  @apply font-medium;
+}
