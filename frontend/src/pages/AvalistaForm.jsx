@@ -1,34 +1,88 @@
 // src/pages/AvalistaForm.jsx
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { avalistasAPI, protestosAPI } from '../services/api';
+import React, { useCallback, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { avalistasAPI, protestosAPI } from "../services/api";
 
 const AvalistaForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    nome: '',
-    cpf_cnpj: '',
-    protesto_id: '',
+    nome: "",
+    cpf_cnpj: "",
+    protesto_id: "",
   });
   const [protestos, setProtestos] = useState([]);
+  const [protestosLoading, setProtestosLoading] = useState(false);
+  const [protestosError, setProtestosError] = useState("");
+  const [protestoSearchTerm, setProtestoSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchProtestos = async () => {
+  const mergeProtestos = useCallback((lista) => {
+    const map = new Map();
+    lista.forEach((protesto) => {
+      if (!map.has(protesto.id)) {
+        map.set(protesto.id, protesto);
+      }
+    });
+    setProtestos(Array.from(map.values()));
+  }, []);
+
+  const fetchProtestos = useCallback(
+    async (searchValue = "", selectedProtestoId = null) => {
       try {
-        const response = await protestosAPI.getAll({ limit: 200 });
-        setProtestos(response.data.data ?? []);
+        setProtestosLoading(true);
+        setProtestosError("");
+
+        const params = {
+          limit: 50,
+        };
+
+        if (searchValue) {
+          params.search = searchValue;
+        }
+
+        const response = await protestosAPI.getAll(params);
+        const listaBase = response.data?.data ?? [];
+        const protestosAtualizados = [...listaBase];
+
+        if (
+          selectedProtestoId &&
+          !listaBase.some((protesto) => protesto.id === selectedProtestoId)
+        ) {
+          try {
+            const protestoIndividual = await protestosAPI.getById(
+              selectedProtestoId
+            );
+            if (protestoIndividual.data?.data) {
+              protestosAtualizados.push(protestoIndividual.data.data);
+            }
+          } catch (innerError) {
+            console.error("Erro ao carregar protesto selecionado:", innerError);
+          }
+        }
+
+        mergeProtestos(protestosAtualizados);
       } catch (err) {
         console.error(err);
-        setError('Nao foi possivel carregar a lista de protestos.');
+        setProtestosError(
+          "Não foi possível carregar a lista de protestos. Tente novamente."
+        );
+      } finally {
+        setProtestosLoading(false);
       }
-    };
+    },
+    [mergeProtestos]
+  );
 
-    fetchProtestos();
-  }, []);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      fetchProtestos(protestoSearchTerm, formData.protesto_id);
+    }, 400);
+
+    return () => clearTimeout(handler);
+  }, [protestoSearchTerm, formData.protesto_id, fetchProtestos]);
 
   useEffect(() => {
     if (!id) return;
@@ -39,13 +93,13 @@ const AvalistaForm = () => {
         const response = await avalistasAPI.getById(id);
         const data = response.data.data;
         setFormData({
-          nome: data.nome ?? '',
-          cpf_cnpj: data.cpf_cnpj ?? '',
-          protesto_id: data.protesto_id ?? '',
+          nome: data.nome ?? "",
+          cpf_cnpj: data.cpf_cnpj ?? "",
+          protesto_id: data.protesto_id ?? "",
         });
       } catch (err) {
         console.error(err);
-        setError('Nao foi possivel carregar os dados do avalista.');
+        setError("Não foi possível carregar os dados do avalista.");
       } finally {
         setLoading(false);
       }
@@ -61,7 +115,7 @@ const AvalistaForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
@@ -70,10 +124,10 @@ const AvalistaForm = () => {
       } else {
         await avalistasAPI.create(formData);
       }
-      navigate('/avalistas');
+      navigate("/avalistas");
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || 'Erro ao salvar avalista.');
+      setError(err.response?.data?.message || "Erro ao salvar avalista.");
     } finally {
       setLoading(false);
     }
@@ -87,18 +141,22 @@ const AvalistaForm = () => {
     );
   }
 
-  const labelClass = 'mb-1 block text-sm font-semibold text-brand-deep/80';
-  const inputClass = 'w-full rounded-xl border border-brand-muted bg-white px-4 py-3 text-brand-deep shadow-sm outline-none transition focus:border-brand-turquoise focus:ring-2 focus:ring-brand-turquoise/40';
+  const labelClass = "mb-1 block text-sm font-semibold text-brand-deep/80";
+  const inputClass =
+    "w-full rounded-xl border border-brand-muted bg-white px-4 py-3 text-brand-deep shadow-sm outline-none transition focus:border-brand-turquoise focus:ring-2 focus:ring-brand-turquoise/40";
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <section className="rounded-3xl bg-gradient-to-r from-brand-navy via-brand-turquoise-dark to-brand-green px-8 py-8 text-white shadow-2xl">
-        <p className="text-xs uppercase tracking-[0.32em] text-white/70">Avalistas</p>
+        <p className="text-xs uppercase tracking-[0.32em] text-white/70">
+          Avalistas
+        </p>
         <h1 className="mt-2 text-3xl font-semibold">
-          {id ? 'Atualizar avalista' : 'Cadastrar novo avalista'}
+          {id ? "Atualizar avalista" : "Cadastrar novo avalista"}
         </h1>
         <p className="mt-3 max-w-2xl text-sm text-white/75">
-          Relacione o avalista ao protesto correspondente e mantenha os dados de contato organizados para tratativas.
+          Relacione o avalista ao protesto correspondente e mantenha os dados de
+          contato organizados para tratativas.
         </p>
       </section>
 
@@ -110,7 +168,7 @@ const AvalistaForm = () => {
 
       <div className="rounded-3xl border border-brand-muted/60 bg-white/95 p-8 shadow-xl">
         <form className="space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
               <label htmlFor="nome" className={labelClass}>
                 Nome completo *
@@ -146,6 +204,20 @@ const AvalistaForm = () => {
             <label htmlFor="protesto_id" className={labelClass}>
               Protesto associado
             </label>
+            <div className="mb-3">
+              <input
+                type="text"
+                value={protestoSearchTerm}
+                onChange={(event) =>
+                  setProtestoSearchTerm(event.target.value.trimStart())
+                }
+                placeholder="Buscar protesto por protocolo ou cliente"
+                className={inputClass}
+              />
+              {protestosError && (
+                <p className="mt-2 text-sm text-red-600">{protestosError}</p>
+              )}
+            </div>
             <select
               id="protesto_id"
               name="protesto_id"
@@ -154,9 +226,21 @@ const AvalistaForm = () => {
               className={inputClass}
             >
               <option value="">Selecione um protesto...</option>
+              {protestosLoading && (
+                <option disabled value="">
+                  Carregando protestos...
+                </option>
+              )}
+              {!protestosLoading && protestos.length === 0 && (
+                <option disabled value="">
+                  Nenhum protesto encontrado
+                </option>
+              )}
               {protestos.map((protesto) => (
                 <option key={protesto.id} value={protesto.id}>
-                  {protesto.protocolo || `Protesto ${protesto.id}`} - {protesto.contrato?.cliente?.nome || 'Cliente nao informado'}
+                  {protesto.protocolo || `Protesto ${protesto.id}`} -{" "}
+                  {protesto.contrato?.cliente?.nome ||
+                    "Cooperado não informado"}
                 </option>
               ))}
             </select>
@@ -165,7 +249,7 @@ const AvalistaForm = () => {
           <div className="flex flex-col gap-3 border-t border-brand-muted/40 pt-6 sm:flex-row sm:justify-end">
             <button
               type="button"
-              onClick={() => navigate('/avalistas')}
+              onClick={() => navigate("/avalistas")}
               className="inline-flex items-center justify-center rounded-xl border border-brand-muted px-5 py-3 text-sm font-semibold text-brand-deep transition hover:bg-brand-muted/60"
             >
               Cancelar
@@ -175,7 +259,7 @@ const AvalistaForm = () => {
               disabled={loading}
               className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-brand-deep to-brand-turquoise-dark px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:from-brand-turquoise-dark hover:to-brand-deep disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {loading ? 'Salvando...' : 'Salvar avalista'}
+              {loading ? "Salvando..." : "Salvar avalista"}
             </button>
           </div>
         </form>

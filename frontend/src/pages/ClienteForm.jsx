@@ -1,20 +1,20 @@
 // src/pages/ClienteForm.jsx
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { clientesAPI } from '../services/api';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { clientesAPI } from "../services/api";
 
 const ClienteForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    nome: '',
-    cpf_cnpj: '',
-    tipo_conta: 'PF',
-    cidade: '',
+    nome: "",
+    cpf_cnpj: "",
+    tipo_conta: "PF",
+    cidade: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -24,14 +24,14 @@ const ClienteForm = () => {
         setLoading(true);
         const response = await clientesAPI.getById(id);
         setFormData({
-          nome: response.data.data.nome ?? '',
-          cpf_cnpj: response.data.data.cpf_cnpj ?? '',
-          tipo_conta: response.data.data.tipo_conta ?? 'PF',
-          cidade: response.data.data.cidade ?? '',
+          nome: response.data.data.nome ?? "",
+          cpf_cnpj: response.data.data.cpf_cnpj ?? "",
+          tipo_conta: response.data.data.tipo_conta ?? "PF",
+          cidade: response.data.data.cidade ?? "",
         });
       } catch (err) {
         console.error(err);
-        setError('Nao foi possivel carregar os dados do cliente.');
+        setError("Nao foi possivel carregar os dados do cooperado.");
       } finally {
         setLoading(false);
       }
@@ -40,14 +40,38 @@ const ClienteForm = () => {
     fetchCliente();
   }, [id]);
 
+  // Função para detectar se é CPF ou CNPJ
+  const detectDocumentType = (document) => {
+    // Remove todos os caracteres não numéricos
+    const cleanDocument = document.replace(/\D/g, "");
+
+    // CPF tem 11 dígitos, CNPJ tem 14 dígitos
+    if (cleanDocument.length <= 11) {
+      return "PF"; // Pessoa Física
+    } else {
+      return "PJ"; // Pessoa Jurídica
+    }
+  };
+
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Se o campo alterado for CPF/CNPJ, detectar automaticamente o tipo
+    if (name === "cpf_cnpj") {
+      const documentType = detectDocumentType(value);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        tipo_conta: documentType,
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
@@ -56,10 +80,10 @@ const ClienteForm = () => {
       } else {
         await clientesAPI.create(formData);
       }
-      navigate('/clientes');
+      navigate("/clientes");
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || 'Erro ao salvar cliente.');
+      setError(err.response?.data?.message || "Erro ao salvar cliente.");
     } finally {
       setLoading(false);
     }
@@ -73,18 +97,22 @@ const ClienteForm = () => {
     );
   }
 
-  const labelClass = 'mb-1 block text-sm font-semibold text-brand-deep/80';
-  const inputClass = 'w-full rounded-xl border border-brand-muted bg-white px-4 py-3 text-brand-deep shadow-sm outline-none transition focus:border-brand-turquoise focus:ring-2 focus:ring-brand-turquoise/40';
+  const labelClass = "mb-1 block text-sm font-semibold text-brand-deep/80";
+  const inputClass =
+    "w-full rounded-xl border border-brand-muted bg-white px-4 py-3 text-brand-deep shadow-sm outline-none transition focus:border-brand-turquoise focus:ring-2 focus:ring-brand-turquoise/40";
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <section className="rounded-3xl bg-gradient-to-r from-brand-navy via-brand-turquoise-dark to-brand-green px-8 py-8 text-white shadow-2xl">
-        <p className="text-xs uppercase tracking-[0.32em] text-white/70">Clientes</p>
+        <p className="text-xs uppercase tracking-[0.32em] text-white/70">
+          Cooperados
+        </p>
         <h1 className="mt-2 text-3xl font-semibold">
-          {id ? 'Atualizar cadastro do cliente' : 'Cadastrar novo cliente'}
+          {id ? "Atualizar cadastro do cooperado" : "Cadastrar novo cooperado"}
         </h1>
         <p className="mt-3 max-w-2xl text-sm text-white/75">
-          Preencha as informacoes cadastrais, vinculando o cliente aos protestos e contratos vigentes.
+          Preencha as informacoes cadastrais, vinculando o cooperado aos
+          protestos e contratos vigentes.
         </p>
       </section>
 
@@ -132,6 +160,11 @@ const ClienteForm = () => {
             <div>
               <label htmlFor="tipo_conta" className={labelClass}>
                 Tipo de conta *
+                {formData.cpf_cnpj && (
+                  <span className="ml-2 text-xs text-green-600 font-normal">
+                    (Detectado automaticamente)
+                  </span>
+                )}
               </label>
               <select
                 id="tipo_conta"
@@ -161,22 +194,22 @@ const ClienteForm = () => {
             </div>
           </div>
 
-            <div className="flex flex-col gap-3 border-t border-brand-muted/40 pt-6 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                onClick={() => navigate('/clientes')}
-                className="inline-flex items-center justify-center rounded-xl border border-brand-muted px-5 py-3 text-sm font-semibold text-brand-deep transition hover:bg-brand-muted/60"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-brand-deep to-brand-turquoise-dark px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:from-brand-turquoise-dark hover:to-brand-deep disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {loading ? 'Salvando...' : 'Salvar cliente'}
-              </button>
-            </div>
+          <div className="flex flex-col gap-3 border-t border-brand-muted/40 pt-6 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={() => navigate("/clientes")}
+              className="inline-flex items-center justify-center rounded-xl border border-brand-muted px-5 py-3 text-sm font-semibold text-brand-deep transition hover:bg-brand-muted/60"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-brand-deep to-brand-turquoise-dark px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:from-brand-turquoise-dark hover:to-brand-deep disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {loading ? "Salvando..." : "Salvar cooperado"}
+            </button>
+          </div>
         </form>
       </div>
     </div>

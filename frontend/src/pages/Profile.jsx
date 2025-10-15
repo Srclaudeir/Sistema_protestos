@@ -1,27 +1,27 @@
 // src/pages/Profile.jsx
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { authAPI } from '../services/api';
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { authAPI } from "../services/api";
 
 const Profile = () => {
   const { user, logout } = useAuth();
   const [profileData, setProfileData] = useState({
-    nome: '',
-    email: '',
+    nome: "",
+    email: "",
   });
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (user) {
       setProfileData({
-        nome: user.nome || '',
-        email: user.email || '',
+        nome: user.nome || "",
+        email: user.email || "",
       });
     }
   }, [user]);
@@ -42,24 +42,24 @@ const Profile = () => {
 
   const handleUpdateProfile = async (event) => {
     event.preventDefault();
-    setMessage('');
-    setError('');
+    setMessage("");
+    setError("");
 
     try {
       await authAPI.updateProfile(profileData);
-      setMessage('Perfil atualizado com sucesso!');
+      setMessage("Perfil atualizado com sucesso!");
     } catch (err) {
-      setError(err.response?.data?.message || 'Erro ao atualizar perfil');
+      setError(err.response?.data?.message || "Erro ao atualizar perfil");
     }
   };
 
   const handleChangePassword = async (event) => {
     event.preventDefault();
-    setMessage('');
-    setError('');
+    setMessage("");
+    setError("");
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setError('A nova senha e a confirmacao nao coincidem');
+      setError("A nova senha e a confirmacao nao coincidem");
       return;
     }
 
@@ -68,14 +68,14 @@ const Profile = () => {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
       });
-      setMessage('Senha alterada com sucesso!');
+      setMessage("Senha alterada com sucesso!");
       setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
       });
     } catch (err) {
-      setError(err.response?.data?.message || 'Erro ao alterar senha');
+      setError(err.response?.data?.message || "Erro ao alterar senha");
     }
   };
 
@@ -87,10 +87,15 @@ const Profile = () => {
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="flex flex-col gap-4 rounded-3xl border border-brand-muted/70 bg-white p-6 shadow-xl md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-brand-deep/60">Perfil</p>
-          <h1 className="mt-2 text-3xl font-semibold text-brand-deep">Preferencias do usuario</h1>
+          <p className="text-xs uppercase tracking-[0.3em] text-brand-deep/60">
+            Perfil
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold text-brand-deep">
+            Preferencias do usuario
+          </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Atualize seus dados pessoais e mantenha o acesso seguro ao painel corporativo.
+            Atualize seus dados pessoais e mantenha o acesso seguro ao painel
+            corporativo.
           </p>
         </div>
         <button
@@ -116,10 +121,15 @@ const Profile = () => {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-3xl border border-brand-muted/70 bg-white p-6 shadow-lg">
-          <h2 className="mb-4 text-xl font-semibold text-brand-deep">Informacoes do perfil</h2>
+          <h2 className="mb-4 text-xl font-semibold text-brand-deep">
+            Informacoes do perfil
+          </h2>
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <div>
-              <label htmlFor="nome" className="mb-1 block text-sm font-semibold text-brand-deep/80">
+              <label
+                htmlFor="nome"
+                className="mb-1 block text-sm font-semibold text-brand-deep/80"
+              >
                 Nome completo
               </label>
               <input
@@ -132,7 +142,10 @@ const Profile = () => {
               />
             </div>
             <div>
-              <label htmlFor="email" className="mb-1 block text-sm font-semibold text-brand-deep/80">
+              <label
+                htmlFor="email"
+                className="mb-1 block text-sm font-semibold text-brand-deep/80"
+              >
                 Email
               </label>
               <input
@@ -146,7 +159,9 @@ const Profile = () => {
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm text-slate-500">
               <div className="space-y-1">
-                <span className="font-semibold text-brand-deep/80">Usuario</span>
+                <span className="font-semibold text-brand-deep/80">
+                  Usuario
+                </span>
                 <div className="rounded-xl border border-brand-muted bg-brand-muted px-3 py-2 text-brand-deep">
                   {user.username}
                 </div>
@@ -160,7 +175,7 @@ const Profile = () => {
             </div>
             <button
               type="submit"
-              className="w-full rounded-xl bg-brand-turquoise px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-deep"
+              className="w-full rounded-xl bg-gradient-to-r from-brand-deep to-brand-turquoise-dark px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:from-brand-turquoise-dark hover:to-brand-deep"
             >
               Atualizar perfil
             </button>
@@ -168,10 +183,15 @@ const Profile = () => {
         </div>
 
         <div className="rounded-3xl border border-brand-muted/70 bg-white p-6 shadow-lg">
-          <h2 className="mb-4 text-xl font-semibold text-brand-deep">Alterar senha</h2>
+          <h2 className="mb-4 text-xl font-semibold text-brand-deep">
+            Alterar senha
+          </h2>
           <form onSubmit={handleChangePassword} className="space-y-4">
             <div>
-              <label htmlFor="currentPassword" className="mb-1 block text-sm font-semibold text-brand-deep/80">
+              <label
+                htmlFor="currentPassword"
+                className="mb-1 block text-sm font-semibold text-brand-deep/80"
+              >
                 Senha atual
               </label>
               <input
@@ -185,7 +205,10 @@ const Profile = () => {
               />
             </div>
             <div>
-              <label htmlFor="newPassword" className="mb-1 block text-sm font-semibold text-brand-deep/80">
+              <label
+                htmlFor="newPassword"
+                className="mb-1 block text-sm font-semibold text-brand-deep/80"
+              >
                 Nova senha
               </label>
               <input
@@ -199,7 +222,10 @@ const Profile = () => {
               />
             </div>
             <div>
-              <label htmlFor="confirmPassword" className="mb-1 block text-sm font-semibold text-brand-deep/80">
+              <label
+                htmlFor="confirmPassword"
+                className="mb-1 block text-sm font-semibold text-brand-deep/80"
+              >
                 Confirmar nova senha
               </label>
               <input
@@ -214,7 +240,7 @@ const Profile = () => {
             </div>
             <button
               type="submit"
-              className="w-full rounded-xl bg-brand-deep px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-purple"
+              className="w-full rounded-xl bg-gradient-to-r from-brand-deep to-brand-turquoise-dark px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:from-brand-turquoise-dark hover:to-brand-deep"
             >
               Alterar senha
             </button>

@@ -1,16 +1,56 @@
 # Dependencies
 node_modules/
+package-lock.json
 
 # Environment variables
 .env
+.env.local
+.env.*.local
 
 # Logs
 logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Build output
 dist/
+build/
 
 # Data files
 protestos_migrados.json
 protesto2.csv
+*.csv
+!exemplo_importacao.csv
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Scripts de teste/debug temporários
+scripts/testar*.js
+scripts/debug*.js
+scripts/analisar*.js
+scripts/verificar*.js
+scripts/corrigir*.js
+scripts/encontrar*.js
+scripts/remover*.js
+scripts/limpar*.js
+
+# Arquivos temporários do Excel
+~$*.xlsx
+~$*.xls

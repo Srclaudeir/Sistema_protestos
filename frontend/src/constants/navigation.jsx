@@ -1,9 +1,9 @@
 // src/constants/navigation.jsx
 export const navigationItems = [
   {
-    path: '/',
-    label: 'Dashboard',
-    icon: (className = 'h-5 w-5') => (
+    path: "/",
+    label: "Dashboard",
+    icon: (className = "h-5 w-5") => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -22,9 +22,9 @@ export const navigationItems = [
     ),
   },
   {
-    path: '/clientes',
-    label: 'Clientes',
-    icon: (className = 'h-5 w-5') => (
+    path: "/clientes",
+    label: "Cooperados",
+    icon: (className = "h-5 w-5") => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -40,9 +40,9 @@ export const navigationItems = [
     ),
   },
   {
-    path: '/contratos',
-    label: 'Contratos',
-    icon: (className = 'h-5 w-5') => (
+    path: "/contratos",
+    label: "Contratos",
+    icon: (className = "h-5 w-5") => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -60,9 +60,9 @@ export const navigationItems = [
     ),
   },
   {
-    path: '/protestos',
-    label: 'Protestos',
-    icon: (className = 'h-5 w-5') => (
+    path: "/protestos",
+    label: "Protestos",
+    icon: (className = "h-5 w-5") => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -79,9 +79,9 @@ export const navigationItems = [
     ),
   },
   {
-    path: '/avalistas',
-    label: 'Avalistas',
-    icon: (className = 'h-5 w-5') => (
+    path: "/avalistas",
+    label: "Avalistas",
+    icon: (className = "h-5 w-5") => (
       <svg
         className={className}
         viewBox="0 0 24 24"
@@ -93,6 +93,23 @@ export const navigationItems = [
       >
         <path d="M12 3l7 4v5c0 4.418-3.134 8.775-7 10-3.866-1.225-7-5.582-7-10V7l7-4z" />
         <path d="M10 12l2 2 4-4" />
+      </svg>
+    ),
+  },
+  {
+    path: "/especies",
+    label: "Espécies",
+    icon: (className = "h-5 w-5") => (
+      <svg
+        className={className}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
     ),
   },

@@ -1,12 +1,12 @@
 // src/controllers/ClienteController.js
-const { Cliente, Contrato } = require('../models');
-const { Op } = require('sequelize');
-const { 
-  parsePaginationParams, 
-  buildPaginationResponse, 
-  parseSortParams, 
-  parseFilterParams 
-} = require('../utils/pagination');
+const { Cliente, Contrato } = require("../models");
+const { Op } = require("sequelize");
+const {
+  parsePaginationParams,
+  buildPaginationResponse,
+  parseSortParams,
+  parseFilterParams,
+} = require("../utils/pagination");
 
 /**
  * @swagger
@@ -144,47 +144,67 @@ const getClientes = async (req, res) => {
   try {
     // Parse pagination parameters
     const pagination = parsePaginationParams(req.query);
-    
+
     // Define allowed sort fields
-    const allowedSortFields = ['id', 'nome', 'cpf_cnpj', 'tipo_conta', 'cidade', 'created_at', 'updated_at'];
-    
+    const allowedSortFields = [
+      "id",
+      "nome",
+      "cpf_cnpj",
+      "tipo_conta",
+      "cidade",
+      "created_at",
+      "updated_at",
+    ];
+
     // Parse sort parameters
-    const sort = parseSortParams(req.query, allowedSortFields) || [['nome', 'ASC']];
-    
+    const sort = parseSortParams(req.query, allowedSortFields) || [
+      ["nome", "ASC"],
+    ];
+
     // Define allowed filter fields
-    const allowedFilterFields = ['cidade', 'tipo_conta', 'nome', 'cpf_cnpj'];
-    
+    const allowedFilterFields = ["cidade", "tipo_conta", "nome", "cpf_cnpj"];
+
     // Parse filter parameters
     const where = parseFilterParams(req.query, allowedFilterFields);
-    
+
     // Add search filter if present
     if (req.query.search) {
       where[Op.or] = [
         { nome: { [Op.like]: `%${req.query.search}%` } },
-        { cpf_cnpj: { [Op.like]: `%${req.query.search}%` } }
+        { cpf_cnpj: { [Op.like]: `%${req.query.search}%` } },
       ];
     }
-    
+
+    // Tipo de conta filter
+    if (req.query.tipo_conta && req.query.tipo_conta !== "TODOS") {
+      where.tipo_conta = req.query.tipo_conta;
+    }
+
+    // Cidade filter
+    if (req.query.cidade) {
+      where.cidade = req.query.cidade;
+    }
+
     // Build query options
     const options = {
       limit: pagination.limit,
       offset: pagination.offset,
       order: sort,
-      where
+      where,
     };
-    
+
     // Execute query
     const { count, rows } = await Cliente.findAndCountAll(options);
-    
+
     // Build and return response
     const response = buildPaginationResponse(count, rows, pagination);
     res.json(response);
   } catch (error) {
-    console.error('Error fetching clientes:', error);
+    console.error("Error fetching clientes:", error);
     res.status(500).json({
       success: false,
-      message: 'Erro ao buscar clientes',
-      error: process.env.NODE_ENV === 'development' ? error.message : {}
+      message: "Erro ao buscar clientes",
+      error: process.env.NODE_ENV === "development" ? error.message : {},
     });
   }
 };
@@ -234,36 +254,36 @@ const getClientes = async (req, res) => {
 const getCliente = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Find cliente with associated contratos
     const cliente = await Cliente.findByPk(id, {
       include: [
         {
           model: Contrato,
-          as: 'contratos'
-        }
-      ]
+          as: "contratos",
+        },
+      ],
     });
-    
+
     // Check if cliente exists
     if (!cliente) {
       return res.status(404).json({
         success: false,
-        message: 'Cliente não encontrado'
+        message: "Cliente não encontrado",
       });
     }
-    
+
     // Return success response
     res.json({
       success: true,
-      data: cliente
+      data: cliente,
     });
   } catch (error) {
-    console.error('Error fetching cliente:', error);
+    console.error("Error fetching cliente:", error);
     res.status(500).json({
       success: false,
-      message: 'Erro ao buscar cliente',
-      error: process.env.NODE_ENV === 'development' ? error.message : {}
+      message: "Erro ao buscar cliente",
+      error: process.env.NODE_ENV === "development" ? error.message : {},
     });
   }
 };
@@ -337,48 +357,48 @@ const createCliente = async (req, res) => {
   try {
     // Validate required fields
     const { nome, cpf_cnpj, tipo_conta, cidade } = req.body;
-    
+
     if (!nome || !tipo_conta) {
       return res.status(400).json({
         success: false,
-        message: 'Nome e tipo de conta são obrigatórios'
+        message: "Nome e tipo de conta são obrigatórios",
       });
     }
-    
+
     // Check if CPF/CNPJ already exists
     if (cpf_cnpj) {
       const existingCliente = await Cliente.findOne({
-        where: { cpf_cnpj }
+        where: { cpf_cnpj },
       });
-      
+
       if (existingCliente) {
         return res.status(400).json({
           success: false,
-          message: 'CPF/CNPJ já cadastrado'
+          message: "CPF/CNPJ já cadastrado",
         });
       }
     }
-    
+
     // Create new cliente
     const cliente = await Cliente.create({
       nome,
       cpf_cnpj: cpf_cnpj || null,
       tipo_conta,
-      cidade: cidade || null
+      cidade: cidade || null,
     });
-    
+
     // Return success response
     res.status(201).json({
       success: true,
-      message: 'Cliente criado com sucesso',
-      data: cliente
+      message: "Cliente criado com sucesso",
+      data: cliente,
     });
   } catch (error) {
-    console.error('Error creating cliente:', error);
+    console.error("Error creating cliente:", error);
     res.status(500).json({
       success: false,
-      message: 'Erro ao criar cliente',
-      error: process.env.NODE_ENV === 'development' ? error.message : {}
+      message: "Erro ao criar cliente",
+      error: process.env.NODE_ENV === "development" ? error.message : {},
     });
   }
 };
@@ -469,55 +489,55 @@ const updateCliente = async (req, res) => {
   try {
     const { id } = req.params;
     const { nome, cpf_cnpj, tipo_conta, cidade } = req.body;
-    
+
     // Find cliente
     const cliente = await Cliente.findByPk(id);
-    
+
     // Check if cliente exists
     if (!cliente) {
       return res.status(404).json({
         success: false,
-        message: 'Cliente não encontrado'
+        message: "Cliente não encontrado",
       });
     }
-    
+
     // Check if CPF/CNPJ already exists (and it's not this cliente)
     if (cpf_cnpj && cpf_cnpj !== cliente.cpf_cnpj) {
       const existingCliente = await Cliente.findOne({
-        where: { 
+        where: {
           cpf_cnpj,
-          id: { [Op.ne]: id }
-        }
+          id: { [Op.ne]: id },
+        },
       });
-      
+
       if (existingCliente) {
         return res.status(400).json({
           success: false,
-          message: 'CPF/CNPJ já cadastrado'
+          message: "CPF/CNPJ já cadastrado",
         });
       }
     }
-    
+
     // Update cliente
     await cliente.update({
       nome: nome || cliente.nome,
       cpf_cnpj: cpf_cnpj || cliente.cpf_cnpj,
       tipo_conta: tipo_conta || cliente.tipo_conta,
-      cidade: cidade || cliente.cidade
+      cidade: cidade || cliente.cidade,
     });
-    
+
     // Return success response
     res.json({
       success: true,
-      message: 'Cliente atualizado com sucesso',
-      data: cliente
+      message: "Cliente atualizado com sucesso",
+      data: cliente,
     });
   } catch (error) {
-    console.error('Error updating cliente:', error);
+    console.error("Error updating cliente:", error);
     res.status(500).json({
       success: false,
-      message: 'Erro ao atualizar cliente',
-      error: process.env.NODE_ENV === 'development' ? error.message : {}
+      message: "Erro ao atualizar cliente",
+      error: process.env.NODE_ENV === "development" ? error.message : {},
     });
   }
 };
@@ -581,44 +601,44 @@ const updateCliente = async (req, res) => {
 const deleteCliente = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Find cliente
     const cliente = await Cliente.findByPk(id);
-    
+
     // Check if cliente exists
     if (!cliente) {
       return res.status(404).json({
         success: false,
-        message: 'Cliente não encontrado'
+        message: "Cliente não encontrado",
       });
     }
-    
+
     // Check if cliente has associated contratos
     const contratosCount = await Contrato.count({
-      where: { cliente_id: id }
+      where: { cliente_id: id },
     });
-    
+
     if (contratosCount > 0) {
       return res.status(400).json({
         success: false,
-        message: 'Não é possível excluir cliente com contratos associados'
+        message: "Não é possível excluir cliente com contratos associados",
       });
     }
-    
+
     // Delete cliente
     await cliente.destroy();
-    
+
     // Return success response
     res.json({
       success: true,
-      message: 'Cliente removido com sucesso'
+      message: "Cliente removido com sucesso",
     });
   } catch (error) {
-    console.error('Error deleting cliente:', error);
+    console.error("Error deleting cliente:", error);
     res.status(500).json({
       success: false,
-      message: 'Erro ao remover cliente',
-      error: process.env.NODE_ENV === 'development' ? error.message : {}
+      message: "Erro ao remover cliente",
+      error: process.env.NODE_ENV === "development" ? error.message : {},
     });
   }
 };
@@ -628,5 +648,5 @@ module.exports = {
   getCliente,
   createCliente,
   updateCliente,
-  deleteCliente
+  deleteCliente,
 };

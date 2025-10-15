@@ -1,47 +1,104 @@
 // src/pages/ContratoForm.jsx
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { contratosAPI, clientesAPI } from '../services/api';
-
-const especies = [
-  'CARTAO',
-  'VEICULO',
-  'PRONAMPE',
-  'BNDES',
-  'CAPITAL DE GIRO',
-  'CHEQUE ESPECIAL',
-  'ANTECIPACAO',
-  'FINANCIAMENTO',
-  'PRONAMP',
-];
+import React, { useCallback, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { contratosAPI, clientesAPI, especiesAPI } from "../services/api";
 
 const ContratoForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    numero_contrato_sisbr: '',
-    numero_contrato_legado: '',
-    especie: '',
-    ponto_atendimento: '',
-    cliente_id: '',
+    numero_contrato_sisbr: "",
+    numero_contrato_legado: "",
+    especie: "",
+    ponto_atendimento: "",
+    cliente_id: "",
   });
   const [clientes, setClientes] = useState([]);
+  const [clientesLoading, setClientesLoading] = useState(false);
+  const [clientesError, setClientesError] = useState("");
+  const [clienteSearchTerm, setClienteSearchTerm] = useState("");
+  const [especies, setEspecies] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchClientes = async () => {
+  const mergeClientes = useCallback((lista) => {
+    const map = new Map();
+    lista.forEach((cliente) => {
+      if (!map.has(cliente.id)) {
+        map.set(cliente.id, cliente);
+      }
+    });
+    setClientes(Array.from(map.values()));
+  }, []);
+
+  const fetchClientes = useCallback(
+    async (searchValue = "", selectedClienteId = null) => {
       try {
-        const response = await clientesAPI.getAll({ limit: 200 });
-        setClientes(response.data.data ?? []);
+        setClientesLoading(true);
+        setClientesError("");
+
+        const params = {
+          limit: 50,
+        };
+
+        if (searchValue) {
+          params.search = searchValue;
+        }
+
+        const response = await clientesAPI.getAll(params);
+        const listaBase = response.data?.data ?? [];
+        const clientesAtualizados = [...listaBase];
+
+        if (
+          selectedClienteId &&
+          !listaBase.some((cliente) => cliente.id === selectedClienteId)
+        ) {
+          try {
+            const clienteIndividual = await clientesAPI.getById(
+              selectedClienteId
+            );
+            if (clienteIndividual.data?.data) {
+              clientesAtualizados.push(clienteIndividual.data.data);
+            }
+          } catch (innerError) {
+            console.error("Erro ao carregar cliente selecionado:", innerError);
+          }
+        }
+
+        mergeClientes(clientesAtualizados);
       } catch (err) {
         console.error(err);
-        setError('Nao foi possivel carregar a lista de clientes.');
+        setClientesError(
+          "Não foi possível carregar a lista de clientes. Tente novamente."
+        );
+      } finally {
+        setClientesLoading(false);
+      }
+    },
+    [mergeClientes]
+  );
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      fetchClientes(clienteSearchTerm, formData.cliente_id);
+    }, 400);
+
+    return () => clearTimeout(handler);
+  }, [clienteSearchTerm, formData.cliente_id, fetchClientes]);
+
+  // Carregar espécies ativas
+  useEffect(() => {
+    const fetchEspecies = async () => {
+      try {
+        const response = await especiesAPI.getAll({ ativo: true, limit: 100 });
+        setEspecies(response.data.data || []);
+      } catch (err) {
+        console.error("Erro ao carregar espécies:", err);
       }
     };
 
-    fetchClientes();
+    fetchEspecies();
   }, []);
 
   useEffect(() => {
@@ -53,15 +110,15 @@ const ContratoForm = () => {
         const response = await contratosAPI.getById(id);
         const data = response.data.data;
         setFormData({
-          numero_contrato_sisbr: data.numero_contrato_sisbr ?? '',
-          numero_contrato_legado: data.numero_contrato_legado ?? '',
-          especie: data.especie ?? '',
-          ponto_atendimento: data.ponto_atendimento ?? '',
-          cliente_id: data.cliente_id ?? '',
+          numero_contrato_sisbr: data.numero_contrato_sisbr ?? "",
+          numero_contrato_legado: data.numero_contrato_legado ?? "",
+          especie: data.especie ?? "",
+          ponto_atendimento: data.ponto_atendimento ?? "",
+          cliente_id: data.cliente_id ?? "",
         });
       } catch (err) {
         console.error(err);
-        setError('Nao foi possivel carregar os dados do contrato.');
+        setError("Nao foi possivel carregar os dados do contrato.");
       } finally {
         setLoading(false);
       }
@@ -77,7 +134,7 @@ const ContratoForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
@@ -86,10 +143,10 @@ const ContratoForm = () => {
       } else {
         await contratosAPI.create(formData);
       }
-      navigate('/contratos');
+      navigate("/contratos");
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || 'Erro ao salvar contrato.');
+      setError(err.response?.data?.message || "Erro ao salvar contrato.");
     } finally {
       setLoading(false);
     }
@@ -103,18 +160,22 @@ const ContratoForm = () => {
     );
   }
 
-  const labelClass = 'mb-1 block text-sm font-semibold text-brand-deep/80';
-  const inputClass = 'w-full rounded-xl border border-brand-muted bg-white px-4 py-3 text-brand-deep shadow-sm outline-none transition focus:border-brand-turquoise focus:ring-2 focus:ring-brand-turquoise/40';
+  const labelClass = "mb-1 block text-sm font-semibold text-brand-deep/80";
+  const inputClass =
+    "w-full rounded-xl border border-brand-muted bg-white px-4 py-3 text-brand-deep shadow-sm outline-none transition focus:border-brand-turquoise focus:ring-2 focus:ring-brand-turquoise/40";
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <section className="rounded-3xl bg-gradient-to-r from-brand-navy via-brand-turquoise-dark to-brand-green px-8 py-8 text-white shadow-2xl">
-        <p className="text-xs uppercase tracking-[0.32em] text-white/70">Contratos</p>
+        <p className="text-xs uppercase tracking-[0.32em] text-white/70">
+          Contratos
+        </p>
         <h1 className="mt-2 text-3xl font-semibold">
-          {id ? 'Atualizar contrato' : 'Cadastrar novo contrato'}
+          {id ? "Atualizar contrato" : "Cadastrar novo contrato"}
         </h1>
         <p className="mt-3 max-w-2xl text-sm text-white/75">
-          Identifique o contrato no SISBR, selecione o cliente vinculado e ajuste os dados complementares.
+          Identifique o contrato no SISBR, selecione o cliente vinculado e
+          ajuste os dados complementares.
         </p>
       </section>
 
@@ -169,9 +230,9 @@ const ContratoForm = () => {
                 className={inputClass}
               >
                 <option value="">Selecione...</option>
-                {especies.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
+                {especies.map((especie) => (
+                  <option key={especie.id} value={especie.nome}>
+                    {especie.nome}
                   </option>
                 ))}
               </select>
@@ -193,8 +254,22 @@ const ContratoForm = () => {
 
           <div>
             <label htmlFor="cliente_id" className={labelClass}>
-              Cliente vinculado *
+              Cooperado vinculado *
             </label>
+            <div className="mb-3">
+              <input
+                type="text"
+                value={clienteSearchTerm}
+                onChange={(event) =>
+                  setClienteSearchTerm(event.target.value.trimStart())
+                }
+                placeholder="Buscar cooperado por nome ou CPF/CNPJ"
+                className={inputClass}
+              />
+              {clientesError && (
+                <p className="mt-2 text-sm text-red-600">{clientesError}</p>
+              )}
+            </div>
             <select
               id="cliente_id"
               name="cliente_id"
@@ -203,10 +278,21 @@ const ContratoForm = () => {
               required
               className={inputClass}
             >
-              <option value="">Selecione um cliente...</option>
+              <option value="">Selecione um cooperado...</option>
+              {clientesLoading && (
+                <option disabled value="">
+                  Carregando cooperados...
+                </option>
+              )}
+              {!clientesLoading && clientes.length === 0 && (
+                <option disabled value="">
+                  Nenhum cooperado encontrado
+                </option>
+              )}
               {clientes.map((cliente) => (
                 <option key={cliente.id} value={cliente.id}>
-                  {cliente.nome} {cliente.cpf_cnpj ? `(${cliente.cpf_cnpj})` : ''}
+                  {cliente.nome}{" "}
+                  {cliente.cpf_cnpj ? `(${cliente.cpf_cnpj})` : ""}
                 </option>
               ))}
             </select>
@@ -215,7 +301,7 @@ const ContratoForm = () => {
           <div className="flex flex-col gap-3 border-t border-brand-muted/40 pt-6 sm:flex-row sm:justify-end">
             <button
               type="button"
-              onClick={() => navigate('/contratos')}
+              onClick={() => navigate("/contratos")}
               className="inline-flex items-center justify-center rounded-xl border border-brand-muted px-5 py-3 text-sm font-semibold text-brand-deep transition hover:bg-brand-muted/60"
             >
               Cancelar
@@ -225,7 +311,7 @@ const ContratoForm = () => {
               disabled={loading}
               className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-brand-deep to-brand-turquoise-dark px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:from-brand-turquoise-dark hover:to-brand-deep disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {loading ? 'Salvando...' : 'Salvar contrato'}
+              {loading ? "Salvando..." : "Salvar contrato"}
             </button>
           </div>
         </form>

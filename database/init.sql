@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `nome` varchar(100) NOT NULL,
   `role` enum('admin', 'operador', 'supervisor') DEFAULT 'operador',
   `ativo` BOOLEAN DEFAULT TRUE,
+  `reset_token` varchar(255) DEFAULT NULL,
+  `reset_token_expires` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
@@ -35,6 +37,7 @@ CREATE TABLE IF NOT EXISTS `contratos` (
   `numero_contrato_legado` varchar(50),
   `especie` varchar(50),
   `ponto_atendimento` varchar(100),
+  `cidade` varchar(100),
   `cliente_id` int,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -46,12 +49,12 @@ CREATE TABLE IF NOT EXISTS `contratos` (
 CREATE TABLE IF NOT EXISTS `protestos` (
   `id` int NOT NULL AUTO_INCREMENT,
   `valor_protestado` decimal(15,2) NOT NULL,
-  `numero_parcela` varchar(20),
+  `numero_parcela` varchar(50),
   `data_registro` date,
   `protocolo` varchar(50),
-  `status` varchar(50) DEFAULT 'PROTESTADO',
+  `status` varchar(255) DEFAULT NULL,
   `situacao` text,
-  `data_baixa_cartorio` date NULL,
+  `data_baixa_cartorio` varchar(255) NULL,
   `contrato_id` int,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -91,3 +94,4 @@ INSERT INTO `protestos` (`valor_protestado`, `numero_parcela`, `data_registro`, 
 
 INSERT INTO `avalistas` (`nome`, `cpf_cnpj`, `protesto_id`) VALUES
 ('Carlos Oliveira', '111.222.333-44', 1);
+

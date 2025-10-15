@@ -1,18 +1,17 @@
 {
   "name": "protestos-scripts",
   "version": "1.0.0",
-  "description": "Scripts for migrating data to the Protestos system",
-  "main": "migrateCSVSimple.js",
+  "description": "Ferramentas de importação e validação do Sistema de Protestos",
   "scripts": {
-    "migrate": "node migrateCSVSimple.js",
-    "convert": "node convertCSVToJSON.js",
-    "import": "node importMigratedData.js"
+    "import": "node importarPlanilhaCompleta.js",
+    "total:excel": "node calcularTotalExcel.js",
+    "total:db": "node calcularTotalProtestos.js"
   },
   "dependencies": {
     "csv-parser": "^3.0.0",
-    "sequelize": "^6.33.0",
-    "mysql2": "^3.6.0",
     "dotenv": "^16.3.1",
-    "bcryptjs": "^2.4.3"
+    "mysql2": "^3.6.0",
+    "sequelize": "^6.33.0",
+    "xlsx": "^0.18.5"
   }
 }

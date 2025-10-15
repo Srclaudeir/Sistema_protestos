@@ -2,13 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
+}
+
+html,
+body {
+  overflow-x: hidden;
 }
 
 body {
   @apply bg-brand-surface text-slate-900 antialiased;
   margin: 0;
+}
+
+/* Reset para garantir que as bordas arredondadas funcionem */
+* {
+  box-sizing: border-box;
 }
 
 a {
@@ -17,4 +29,98 @@ a {
 
 button {
   @apply font-medium;
+}
+
+/* Garantir que todas as bordas arredondadas funcionem corretamente */
+.rounded-3xl {
+  border-radius: 1.5rem !important;
+  -webkit-border-radius: 1.5rem !important;
+  -moz-border-radius: 1.5rem !important;
+}
+
+.rounded-2xl {
+  border-radius: 1rem !important;
+  -webkit-border-radius: 1rem !important;
+  -moz-border-radius: 1rem !important;
+}
+
+.rounded-xl {
+  border-radius: 0.75rem !important;
+  -webkit-border-radius: 0.75rem !important;
+  -moz-border-radius: 0.75rem !important;
+}
+
+.rounded-lg {
+  border-radius: 0.5rem !important;
+  -webkit-border-radius: 0.5rem !important;
+  -moz-border-radius: 0.5rem !important;
+}
+
+.rounded-full {
+  border-radius: 9999px !important;
+  -webkit-border-radius: 9999px !important;
+  -moz-border-radius: 9999px !important;
+}
+
+/* Garantir que as bordas arredondadas funcionem em tabelas */
+.overflow-x-auto.rounded-3xl {
+  border-radius: 1.5rem !important;
+  -webkit-border-radius: 1.5rem !important;
+  -moz-border-radius: 1.5rem !important;
+}
+
+.overflow-x-auto.rounded-3xl table {
+  border-radius: 1.5rem !important;
+  -webkit-border-radius: 1.5rem !important;
+  -moz-border-radius: 1.5rem !important;
+  overflow: hidden;
+}
+
+/* Scrollbar customizada para tabelas */
+.overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(13, 148, 136, 0.3) rgba(241, 245, 249, 0.5);
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+  height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.5);
+  border-radius: 10px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: rgba(13, 148, 136, 0.3);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(13, 148, 136, 0.6);
+}
+
+/* Indicador de sombra para mostrar que há mais conteúdo */
+.overflow-x-auto {
+  position: relative;
+}
+
+.overflow-x-auto::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50px;
+  background: linear-gradient(to left, rgba(255, 255, 255, 0.9), transparent);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+@media (max-width: 1024px) {
+  .overflow-x-auto:not(:hover)::after {
+    opacity: 1;
+  }
 }
