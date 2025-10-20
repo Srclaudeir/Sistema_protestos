@@ -55,7 +55,7 @@ Protesto.init(
     status: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      defaultValue: null,
+      defaultValue: "ESPERANDO_PROTESTO",
     },
     situacao: {
       type: DataTypes.TEXT,

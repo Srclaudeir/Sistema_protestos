@@ -2,9 +2,11 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { navigationItems } from "../../constants/navigation";
+import { usePermissions } from "../../hooks/usePermissions";
 
 const Sidebar = () => {
   const location = useLocation();
+  const { isAdmin } = usePermissions();
 
   const isActive = (path) => {
     if (path === "/") {
@@ -12,6 +14,14 @@ const Sidebar = () => {
     }
     return location.pathname.startsWith(path);
   };
+
+  // Filtrar itens de navegação baseado em permissões
+  const visibleItems = navigationItems.filter((item) => {
+    if (item.requiresAdmin) {
+      return isAdmin();
+    }
+    return true;
+  });
 
   return (
     <aside className="hidden min-h-screen w-72 flex-col bg-gradient-to-b from-brand-navy via-brand-deep to-brand-forest text-white shadow-2xl lg:flex">
@@ -32,7 +42,7 @@ const Sidebar = () => {
       </div>
 
       <nav className="flex-1 space-y-2 px-4">
-        {navigationItems.map((item) => {
+        {visibleItems.map((item) => {
           const active = isActive(item.path);
           return (
             <Link

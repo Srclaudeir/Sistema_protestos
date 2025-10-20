@@ -1,39 +1,49 @@
 // src/pages/ProtestosList.jsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import debounce from "lodash.debounce";
 
 import { protestosAPI } from "../services/api";
 import { formatDate } from "../utils/dateFormatter";
+import { usePermissions } from "../hooks/usePermissions";
 
 const ITEMS_PER_PAGE = 10;
 
 const STATUS_OPTIONS = [
-  { value: "ESPERANDO_PROTESTO", label: "Aguardando Protocolo" },
+  { value: "ESPERANDO_PROTESTO", label: "Aguardando Protesto" },
+  { value: "CONFIRMADO", label: "Confirmado" },
+  { value: "SUSTADO", label: "Sustado" },
   { value: "PROTESTADO", label: "Protestado" },
   { value: "PAGO", label: "Pago" },
-  { value: "DESISTENCIA", label: "Desistência" },
+  { value: "PAGO_COOPERATIVA", label: "Pago Cooperativa" },
+  { value: "DESISTENCIA", label: "Desistencia" },
   { value: "CANCELADO", label: "Cancelado" },
   { value: "RETIRADO", label: "Retirado" },
   { value: "DEVOLVIDO", label: "Devolvido" },
 ];
 
 const STATUS_LABELS = {
+  ESPERANDO_PROTESTO: "Aguardando Protesto",
+  "AGUARDANDO PROTESTO": "Aguardando Protesto",
+  "AGUARDANDO PROTOCOLO": "Aguardando Protesto",
   PROTESTADO: "Protestado",
+  CONFIRMADO: "Confirmado",
+  SUSTADO: "Sustado",
   PAGO: "Pago",
-  DESISTENCIA: "Desistência",
+  PAGO_COOPERATIVA: "Pago Cooperativa",
+  DESISTENCIA: "Desistencia",
   CANCELADO: "Cancelado",
   CANCELADA: "Cancelado",
   RETIRADO: "Retirado",
   DEVOLVIDO: "Devolvido",
-  ESPERANDO_PROTESTO: "Aguardando Protocolo",
-  "AGUARDANDO PROTESTO": "Aguardando Protocolo",
-  "AGUARDANDO PROTOCOLO": "Aguardando Protocolo",
 };
 
 const STATUS_BADGE_CLASSES = {
   PROTESTADO: "bg-brand-lime/20 text-brand-lime border border-brand-lime/30",
+  CONFIRMADO: "bg-blue-100 text-blue-700 border border-blue-300",
+  SUSTADO: "bg-indigo-100 text-indigo-700 border border-indigo-300",
   PAGO: "bg-brand-green/15 text-brand-green border border-brand-green/25",
+  PAGO_COOPERATIVA: "bg-emerald-100 text-emerald-700 border border-emerald-300",
   CANCELADO:
     "bg-brand-purple/20 text-brand-purple border border-brand-purple/30",
   RETIRADO: "bg-orange-100 text-orange-700 border border-orange-300",
@@ -47,6 +57,8 @@ const STATUS_BADGE_CLASSES = {
 };
 
 const ProtestosList = () => {
+  const location = useLocation();
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const [protestos, setProtestos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -114,6 +126,16 @@ const ProtestosList = () => {
       const response = await protestosAPI.getAll(params);
       const { data, pages, total } = response.data;
 
+      console.log("📊 Protestos recebidos:", {
+        total,
+        quantidade: data.length,
+        protestos: data.map((p) => ({
+          id: p.id,
+          status: p.status,
+          cooperado: p.contrato?.cliente?.nome,
+        })),
+      });
+
       setProtestos(data);
       setTotalPages(pages);
       setTotalProtestos(total);
@@ -136,7 +158,17 @@ const ProtestosList = () => {
 
   useEffect(() => {
     fetchProtestos(currentPage, searchTerm, filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, fetchProtestos]);
+
+  // Recarrega quando volta de outra página (ex: após criar/editar)
+  useEffect(() => {
+    console.log(
+      "🔄 Componente montado/localização mudou, recarregando lista..."
+    );
+    fetchProtestos(1, searchTerm, filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   const handleSearchChange = (value) => {
     setSearchTerm(value);
@@ -272,25 +304,27 @@ const ProtestosList = () => {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
-                to="/protestos/novo"
-                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-deep to-brand-turquoise-dark px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:from-brand-turquoise-dark hover:to-brand-deep"
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              {canCreate() && (
+                <Link
+                  to="/protestos/novo"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-deep to-brand-turquoise-dark px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:from-brand-turquoise-dark hover:to-brand-deep"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Novo Protesto
-              </Link>
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  Novo Protesto
+                </Link>
+              )}
 
               <button
                 type="button"
@@ -665,19 +699,51 @@ const ProtestosList = () => {
                         </span>
                       </td>
                       <td className="px-3 py-2 text-sm font-medium sm:px-4 whitespace-nowrap">
-                        <Link
-                          to={`/protestos/editar/${protesto.id}`}
-                          className="mr-3 text-brand-turquoise hover:text-brand-deep"
-                        >
-                          Editar
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(protesto.id)}
-                          className="text-brand-purple hover:text-brand-deep"
-                        >
-                          Excluir
-                        </button>
+                        <div className="flex flex-wrap items-center gap-3">
+                          {canEdit() && (
+                            <Link
+                              to={`/protestos/editar/${protesto.id}`}
+                              className="flex items-center gap-1 rounded-lg bg-brand-turquoise/10 px-3 py-1 text-xs font-semibold text-brand-turquoise transition hover:bg-brand-turquoise hover:text-white"
+                            >
+                              <svg
+                                className="h-3 w-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                />
+                              </svg>
+                              Editar
+                            </Link>
+                          )}
+                          {canDelete() && (
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(protesto.id)}
+                              className="flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-100"
+                            >
+                              <svg
+                                className="h-3 w-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
+                              Excluir
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

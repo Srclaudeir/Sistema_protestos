@@ -239,6 +239,21 @@ const getProtesto = async (req, res) => {
  * @param {Request} req
  * @param {Response} res
  */
+// Função para normalizar status
+const normalizeStatus = (status) => {
+  if (!status) return "ESPERANDO_PROTESTO";
+  const normalized = status.toString().trim().toUpperCase();
+  // Normaliza variacoes do mesmo status
+  if (
+    normalized === "AGUARDANDO PROTESTO" ||
+    normalized === "AGUARDANDO PROTOCOLO" ||
+    normalized === "ESPERANDO PROTESTO"
+  ) {
+    return "ESPERANDO_PROTESTO";
+  }
+  return normalized;
+};
+
 const createProtesto = async (req, res) => {
   try {
     // Validate required fields
@@ -267,7 +282,7 @@ const createProtesto = async (req, res) => {
       numero_parcela: req.body.numero_parcela || null,
       data_registro,
       protocolo: req.body.protocolo || null,
-      status: req.body.status || "PROTESTADO",
+      status: normalizeStatus(req.body.status),
       situacao: req.body.situacao || null,
       data_baixa_cartorio: req.body.data_baixa_cartorio || null,
       contrato_id,
@@ -368,7 +383,7 @@ const updateProtesto = async (req, res) => {
       numero_parcela,
       data_registro,
       protocolo,
-      status,
+      status: status ? normalizeStatus(status) : protesto.status,
       situacao,
       data_baixa_cartorio,
       contrato_id,

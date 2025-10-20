@@ -1,10 +1,12 @@
 // src/pages/Profile.jsx
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
+import { usePermissions } from "../hooks/usePermissions";
 import { authAPI } from "../services/api";
 
 const Profile = () => {
   const { user, logout } = useAuth();
+  const { getRoleLabel } = usePermissions();
   const [profileData, setProfileData] = useState({
     nome: "",
     email: "",
@@ -169,7 +171,7 @@ const Profile = () => {
               <div className="space-y-1">
                 <span className="font-semibold text-brand-deep/80">Funcao</span>
                 <div className="rounded-xl border border-brand-muted bg-brand-muted px-3 py-2 text-brand-deep">
-                  {user.role}
+                  {getRoleLabel()}
                 </div>
               </div>
             </div>

@@ -3,10 +3,12 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import debounce from "lodash.debounce";
 import { contratosAPI } from "../services/api";
+import { usePermissions } from "../hooks/usePermissions";
 
 const ITEMS_PER_PAGE = 10;
 
 const ContratosList = () => {
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const [contratos, setContratos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -124,25 +126,27 @@ const ContratosList = () => {
             Monitore os contratos ativos e simplifique o acesso ao cadastro.
           </p>
         </div>
-        <Link
-          to="/contratos/novo"
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-deep to-brand-turquoise-dark px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:from-brand-turquoise-dark hover:to-brand-deep"
-        >
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        {canCreate() && (
+          <Link
+            to="/contratos/novo"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-deep to-brand-turquoise-dark px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:from-brand-turquoise-dark hover:to-brand-deep"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Novo Contrato
-        </Link>
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Novo Contrato
+          </Link>
+        )}
       </div>
 
       <div className="rounded-3xl border border-brand-muted/60 bg-white p-6 shadow-sm space-y-4">
@@ -305,45 +309,49 @@ const ContratosList = () => {
                   </td>
                   <td className="px-3 py-2 text-sm font-medium sm:px-4 whitespace-nowrap">
                     <div className="flex flex-wrap items-center gap-3">
-                      <Link
-                        to={`/contratos/editar/${contrato.id}`}
-                        className="flex items-center gap-1 rounded-lg bg-brand-turquoise/10 px-3 py-1 text-xs font-semibold text-brand-turquoise transition hover:bg-brand-turquoise hover:text-white"
-                      >
-                        <svg
-                          className="h-3 w-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                      {canEdit() && (
+                        <Link
+                          to={`/contratos/editar/${contrato.id}`}
+                          className="flex items-center gap-1 rounded-lg bg-brand-turquoise/10 px-3 py-1 text-xs font-semibold text-brand-turquoise transition hover:bg-brand-turquoise hover:text-white"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                        Editar
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(contrato.id)}
-                        className="flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-100"
-                      >
-                        <svg
-                          className="h-3 w-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                          <svg
+                            className="h-3 w-3"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                          </svg>
+                          Editar
+                        </Link>
+                      )}
+                      {canDelete() && (
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(contrato.id)}
+                          className="flex items-center gap-1 rounded-lg bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-100"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        Excluir
-                      </button>
+                          <svg
+                            className="h-3 w-3"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          Excluir
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

@@ -5,8 +5,11 @@ import { protestosAPI, contratosAPI } from "../services/api";
 
 const statusOptions = [
   "ESPERANDO_PROTESTO",
+  "CONFIRMADO",
+  "SUSTADO",
   "PROTESTADO",
   "PAGO",
+  "PAGO_COOPERATIVA",
   "ACORDO",
   "RENEGOCIADO",
   "DESISTENCIA",
@@ -142,14 +145,17 @@ const ProtestoForm = () => {
     setLoading(true);
 
     try {
+      console.log("📤 Enviando protesto com dados:", formData);
       if (id) {
-        await protestosAPI.update(id, formData);
+        const response = await protestosAPI.update(id, formData);
+        console.log("✅ Protesto atualizado:", response.data);
       } else {
-        await protestosAPI.create(formData);
+        const response = await protestosAPI.create(formData);
+        console.log("✅ Protesto criado:", response.data);
       }
       navigate("/protestos");
     } catch (err) {
-      console.error(err);
+      console.error("❌ Erro ao salvar:", err);
       setError(err.response?.data?.message || "Erro ao salvar protesto.");
     } finally {
       setLoading(false);

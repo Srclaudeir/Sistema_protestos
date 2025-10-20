@@ -82,8 +82,9 @@ const connectDB = async () => {
     console.log("[database] Connection established");
 
     if (process.env.NODE_ENV !== "production") {
-      // Usar 'force: false' para criar tabelas que não existem
-      await sequelize.sync({ alter: true });
+      // Usar 'alter: false' para não modificar tabelas existentes
+      // Use migrations SQL para mudanças na estrutura do banco
+      await sequelize.sync({ alter: false });
       console.log("[database] Models synced");
     }
   } catch (error) {

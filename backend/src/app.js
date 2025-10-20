@@ -19,6 +19,7 @@ const dashboardRoutes = require("./routes/dashboard.routes");
 const avalistaRoutes = require("./routes/avalista.routes");
 const especieRoutes = require("./routes/especie.routes");
 const authRoutes = require("./routes/auth.routes");
+const userRoutes = require("./routes/user.routes");
 
 // Import error handling middleware
 const {
@@ -36,7 +37,9 @@ const app = express();
 
 // Middleware
 app.use(helmet()); // Security headers
-const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
+const allowedOrigins = (
+  process.env.CORS_ORIGIN || "http://localhost:5173,http://127.0.0.1:5173"
+)
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
@@ -44,9 +47,22 @@ const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // In development, allow requests without origin (like Postman)
+      if (!origin) {
         return callback(null, true);
       }
+
+      // Check if origin is in allowed list
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // In development, be more permissive
+      if (process.env.NODE_ENV === "development") {
+        console.log(`[CORS] Allowing origin in dev mode: ${origin}`);
+        return callback(null, true);
+      }
+
       return callback(new Error(`Origin ${origin} not allowed by CORS`));
     },
     credentials: true,
@@ -100,6 +116,7 @@ app.use("/api/v1/protestos", protestoRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/v1/avalistas", avalistaRoutes);
 app.use("/api/v1/especies", especieRoutes);
+app.use("/api/v1/users", userRoutes);
 
 // Validation error handling middleware
 app.use(validationErrorHandler);

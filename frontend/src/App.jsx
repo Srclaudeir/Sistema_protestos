@@ -24,6 +24,7 @@ import AvalistasList from "./pages/AvalistasList";
 import AvalistaForm from "./pages/AvalistaForm";
 import EspeciesList from "./pages/EspeciesList";
 import EspecieForm from "./pages/EspecieForm";
+import UserManagement from "./pages/UserManagement";
 
 function App() {
   return (
@@ -61,6 +62,7 @@ function App() {
               <Route path="especies" element={<EspeciesList />} />
               <Route path="especies/novo" element={<EspecieForm />} />
               <Route path="especies/editar/:id" element={<EspecieForm />} />
+              <Route path="usuarios" element={<UserManagement />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

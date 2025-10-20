@@ -117,3 +117,11 @@ export const especiesAPI = {
   update: (id, especieData) => api.put(`/especies/${id}`, especieData),
   delete: (id) => api.delete(`/especies/${id}`),
 };
+
+// Users API calls (Admin only)
+export const usersAPI = {
+  getAll: () => api.get("/users"),
+  create: (userData) => api.post("/users", userData),
+  updateRole: (id, role) => api.put(`/users/${id}/role`, { role }),
+  toggleStatus: (id) => api.put(`/users/${id}/toggle-status`),
+};

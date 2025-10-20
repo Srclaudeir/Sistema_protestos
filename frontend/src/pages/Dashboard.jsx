@@ -1,4 +1,4 @@
-﻿// src/pages/Dashboard.jsx
+// src/pages/Dashboard.jsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { dashboardAPI } from "../services/api";
 import {
@@ -34,10 +34,13 @@ const COLORS = [
 
 const STATUS_FILTER_OPTIONS = [
   { value: "TODOS", label: "Todos os status" },
-  { value: "AGUARDADANDO PROTESTO", label: "Aguardando Protocolo" },
+  { value: "ESPERANDO_PROTESTO", label: "Aguardando Protesto" },
+  { value: "CONFIRMADO", label: "Confirmado" },
+  { value: "SUSTADO", label: "Sustado" },
   { value: "PROTESTADO", label: "Protestado" },
   { value: "PAGO", label: "Pago" },
-  { value: "DESISTENCIA", label: "Desistência" },
+  { value: "PAGO_COOPERATIVA", label: "Pago Cooperativa" },
+  { value: "DESISTENCIA", label: "Desistencia" },
   { value: "CANCELADO", label: "Cancelado" },
   { value: "RETIRADO", label: "Retirado" },
   { value: "DEVOLVIDO", label: "Devolvido" },
@@ -144,8 +147,14 @@ const Dashboard = () => {
     switch (status) {
       case "PROTESTADO":
         return "bg-brand-lime/20 text-brand-lime border border-brand-lime/30";
+      case "CONFIRMADO":
+        return "bg-blue-100 text-blue-700 border border-blue-300";
+      case "SUSTADO":
+        return "bg-indigo-100 text-indigo-700 border border-indigo-300";
       case "PAGO":
         return "bg-brand-green/15 text-brand-green border border-brand-green/25";
+      case "PAGO_COOPERATIVA":
+        return "bg-emerald-100 text-emerald-700 border border-emerald-300";
       case "CANCELADO":
         return "bg-brand-purple/15 text-brand-purple border border-brand-purple/25";
       default:

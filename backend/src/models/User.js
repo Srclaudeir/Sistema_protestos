@@ -69,11 +69,11 @@ User.init(
       },
     },
     role: {
-      type: DataTypes.ENUM("admin", "operador", "supervisor"),
+      type: DataTypes.ENUM("admin", "supervisor", "operador", "consultor"),
       defaultValue: "operador",
       validate: {
         isIn: {
-          args: [["admin", "operador", "supervisor"]],
+          args: [["admin", "supervisor", "operador", "consultor"]],
           msg: "Função inválida",
         },
       },
